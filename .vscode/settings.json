@@ -1,0 +1,10 @@
+{
+	"files.associations": {
+		"*.css": "css",
+		"avcodec.h": "c",
+		"stdbool.h": "c",
+		"avutil.h": "c",
+		"imgutils.h": "c",
+		"avformat.h": "c"
+	}
+}
