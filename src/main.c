@@ -20,7 +20,7 @@ FrameData* open_image(const char *image_file) {
 		return NULL;
 	}
 
-	av_dump_format(formatCtx, 0, image_file, false);
+	// av_dump_format(formatCtx, 0, image_file, false);
 
 	AVCodecParameters *codecParams = formatCtx->streams[0]->codecpar;
 
@@ -93,7 +93,7 @@ FrameData* open_image(const char *image_file) {
 }
 
 bool save_image(FrameData *frame_data, const char *output) {
-	AVCodec *imageCodec = avcodec_find_encoder(AV_CODEC_ID_PNG);
+	AVCodec *imageCodec = avcodec_find_encoder(frame_data->codecCtx->codec_id);
 	if (imageCodec == NULL) {
 		printf("E: Cannot find encoder for PNG\n");
 		return false;
@@ -106,8 +106,8 @@ bool save_image(FrameData *frame_data, const char *output) {
 	}
 
 	imageCodecCtx->pix_fmt = frame_data->codecCtx->pix_fmt;
-	imageCodecCtx->width = frame_data->codecCtx->width;
-	imageCodecCtx->height = frame_data->codecCtx->height;
+	imageCodecCtx->width = frame_data->frame->width;
+	imageCodecCtx->height = frame_data->frame->height;
 	imageCodecCtx->time_base = frame_data->codecCtx->time_base;
 
 	int err = avcodec_open2(imageCodecCtx, imageCodec, NULL);
@@ -169,17 +169,23 @@ bool scale_image(FrameData *frame_data, float scale_factor) {
 
 	newFrame->width = newWidth;
 	newFrame->height = newHeight;
-	newFrame->format = AV_PIX_FMT_YUV420P;
-	av_frame_get_buffer(newFrame, 32);
+	newFrame->format = AV_PIX_FMT_RGB0;
+	int res = av_frame_get_buffer(newFrame, 32);
+	if (res != 0) {
+		printf("E: Could not get frame buffer: %s\n", av_err2str(res));
+		return false;
+	}
 
 	printf("New image dimensions: %dx%d\n", newWidth, newHeight);
 
-	struct SwsContext *swsCtx = sws_getContext(originalWidth, originalHeight, AV_PIX_FMT_YUV420P, newWidth, newHeight, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
+	struct SwsContext *swsCtx = sws_getContext(originalWidth, originalHeight, originalFrame->format,
+											   newWidth, newHeight, AV_PIX_FMT_RGB0,
+											   SWS_BICUBIC, NULL, NULL, NULL);
 	if (!swsCtx) {
 		printf("E: Could not get sws context\n");
 		return false;
 	}
-	
+
 	sws_scale(swsCtx, (const uint8_t* const*)&originalFrame->data, 
 			originalFrame->linesize, 0, originalHeight, newFrame->data, newFrame->linesize);
 
