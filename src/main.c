@@ -30,31 +30,31 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Process it
-	float scale_factor = 1;
+	int sizes[9] = { 16, 24, 32, 64, 128, 256, 512, 1024 };
 	FrameData *temp_frame = malloc(sizeof(icon_frame));
 
 	bool hadError = false;
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 8; i++) {
 		*temp_frame = *icon_frame;
 
-		int newWidth = (int)((float) temp_frame->frame->width * scale_factor);
-		int newHeight = (int)((float) temp_frame->frame->height * scale_factor);
-		printf("Generating %dx%d...\n", newWidth, newHeight);
+		Size new_size = {
+			.width = sizes[i], 
+			.height = sizes[i]
+		};
 
-		bool ok = scale_image(temp_frame, scale_factor);
+		printf("Generating %dx%d...\n", new_size.width, new_size.height);
+
+		bool ok = scale_image(temp_frame, new_size);
 		if (!ok) {
 			break_error(hadError);
 		}
 
 		char *output_filename = malloc(strlen(output_name) + 32);
-		sprintf(output_filename, "%s/icon_%dx%d.png", output_name, newWidth, newHeight);
+		sprintf(output_filename, "%s/icon_%dx%d.png", output_name, new_size.width, new_size.height);
 		ok = save_image(temp_frame, output_filename);
 		if (!ok) {
 			break_error(hadError);
 		}
-
-		// update scale factor
-		scale_factor /= 2;
 	}
 
 	free(temp_frame);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	else {
-		printf("The iconset has been created at %s\n", output_name);
+		printf("The iconset has been created at: %s\n", output_name);
 	}
 
 	return 0;

@@ -8,8 +8,6 @@ FrameData* open_image(const char *image_file) {
 		return NULL;
 	}
 
-	// av_dump_format(formatCtx, 0, image_file, false);
-
 	AVCodecParameters *codecParams = formatCtx->streams[0]->codecpar;
 	AVCodec *codec = avcodec_find_decoder(codecParams->codec_id);
 	if (!codec) {
@@ -147,13 +145,10 @@ bool save_image(FrameData *frame_data, const char *output) {
 	return true;
 }
 
-bool scale_image(FrameData *frame_data, float scale_factor) {
+bool scale_image(FrameData *frame_data, Size new_size) {
 	AVFrame *originalFrame = frame_data->frame;
 	int originalWidth = originalFrame->width;
 	int originalHeight = originalFrame->height;
-
-	int newWidth = (int)((float) originalWidth * scale_factor);
-	int newHeight = (int)((float) originalHeight * scale_factor);
 
 	AVFrame* newFrame = av_frame_alloc();
 	if (!newFrame) {
@@ -161,8 +156,8 @@ bool scale_image(FrameData *frame_data, float scale_factor) {
 		return false;
 	}
 
-	newFrame->width = newWidth;
-	newFrame->height = newHeight;
+	newFrame->width = new_size.width;
+	newFrame->height = new_size.height;
 	newFrame->format = AV_PIX_FMT_RGB0;
 	int res = av_frame_get_buffer(newFrame, 32);
 	if (res != 0) {
@@ -171,7 +166,7 @@ bool scale_image(FrameData *frame_data, float scale_factor) {
 	}
 
 	struct SwsContext *swsCtx = sws_getContext(originalWidth, originalHeight, originalFrame->format,
-											   newWidth, newHeight, AV_PIX_FMT_RGB0,
+											   new_size.width, new_size.height, AV_PIX_FMT_RGB0,
 											   SWS_BICUBIC, NULL, NULL, NULL);
 	if (!swsCtx) {
 		printf("E: Could not get sws context\n");
