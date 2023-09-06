@@ -16,9 +16,9 @@ int main(int argc, char *argv[]) {
 	const char *icon_file = argv[1];
 	const char *output_name = argv[2];
 
-	// Create output folder
+	// Create output folder if it doen't exist.
 	int ok = mkdir(output_name, 0700);
-	if (ok != 0) {
+	if (ok != 0 && errno != EEXIST) {
 		printf("E: Failed to create output folder: %s\n", strerror(errno));
 		return 1;
 	}
