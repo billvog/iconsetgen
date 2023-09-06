@@ -4,14 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
 
 typedef struct {
-	AVCodecContext *codecCtx;
-	AVFrame *frame;
+	struct AVCodecContext *codecCtx;
+	struct AVFrame *frame;
 } FrameData;
 
 typedef struct {

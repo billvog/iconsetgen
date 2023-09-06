@@ -1,3 +1,8 @@
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+
 #include "image.h"
 
 FrameData* open_image(const char *image_file) {
